@@ -5,23 +5,40 @@ import * as XLSX from "xlsx";
 const API_URL = "https://script.google.com/macros/s/AKfycbxl1ywmq4pZf5gOjiN0CokZxPSfFDaajdHzs5fFKEynjEz6l7O7M0u066APNv0rU96V/exec";
 
 // ─── CONFIG ──────────────────────────────────────────────────────────────────
-const CLASSES   = ["DET101","DET102","DET103","DET201","DET202","DET203","DIT101","DIT102"];
+const CLASSES = [
+  "DE26A4","DE26B4","DE26C4",
+  "ET26A5","ET26B5","ET26C5","ET26D5",
+  "ET26E5","ET26F5","ET26G5","ET26H5"
+];
 const SUBGROUPS = ["SG1","SG2","SG3","SG4","SG5"];
 const BUDGET_CAP = 50;
 
 const ITEMS = [
-  { id:1,  name:"A4 Cardstock (100 sheets)",    category:"Paper",      price:8.50,  emoji:"🗒️" },
-  { id:2,  name:"Colour Markers Set (12pc)",     category:"Stationery", price:12.00, emoji:"🖊️" },
-  { id:3,  name:"Sticky Notes Pack (400pc)",     category:"Stationery", price:6.00,  emoji:"📌" },
-  { id:4,  name:"Foam Board A3",                 category:"Materials",  price:4.50,  emoji:"🟨" },
-  { id:5,  name:"Craft Glue (250ml)",            category:"Adhesives",  price:5.00,  emoji:"🔧" },
-  { id:6,  name:"Double-Sided Tape",             category:"Adhesives",  price:3.50,  emoji:"📎" },
-  { id:7,  name:"Scissors (Premium)",            category:"Tools",      price:7.00,  emoji:"✂️" },
-  { id:8,  name:"Protractor Set",                category:"Tools",      price:5.50,  emoji:"📐" },
-  { id:9,  name:"Coloured Craft Paper (50pc)",   category:"Paper",      price:9.00,  emoji:"🎨" },
-  { id:10, name:"Masking Tape Roll",             category:"Adhesives",  price:4.00,  emoji:"🟤" },
-  { id:11, name:"Balsa Wood Strips (10pc)",      category:"Materials",  price:11.00, emoji:"🪵" },
-  { id:12, name:"Wire (5m coil)",                category:"Materials",  price:6.50,  emoji:"🔩" },
+  // 1. Structure & Build
+  { id:1,  name:"Corrugated Cardboard Sheet (A2)", category:"Structure & Build",  price:2.50,  emoji:"📦" },
+  { id:2,  name:"Foam Board 5mm (A2)",              category:"Structure & Build",  price:4.00,  emoji:"🟦" },
+  { id:3,  name:"Foam Board 10mm (A2)",             category:"Structure & Build",  price:6.50,  emoji:"🟪" },
+  { id:4,  name:"Mount Board (A3)",                 category:"Structure & Build",  price:3.00,  emoji:"🗂️" },
+  { id:5,  name:"Thick Paper (A3)",                 category:"Structure & Build",  price:1.50,  emoji:"📄" },
+  { id:6,  name:"Ice Cream Sticks (1 pack)",        category:"Structure & Build",  price:3.50,  emoji:"🍦" },
+  { id:7,  name:"Acrylic Sheet (A2)",               category:"Structure & Build",  price:12.00, emoji:"🔲" },
+
+  // 2. Adhesives & Fastening
+  { id:8,  name:"Double-Sided Tape",                category:"Adhesives & Fastening", price:3.00,  emoji:"📎" },
+  { id:9,  name:"Velcro Strips (30cm)",             category:"Adhesives & Fastening", price:4.00,  emoji:"🔗" },
+  { id:10, name:"Clear Tape",                       category:"Adhesives & Fastening", price:1.50,  emoji:"🩹" },
+  { id:11, name:"White Glue / PVA (bottle)",        category:"Adhesives & Fastening", price:4.50,  emoji:"🧴" },
+
+  // 3. Visualisation & Marking
+  { id:12, name:"Permanent Markers (black + colours)", category:"Visualisation & Marking", price:6.50,  emoji:"🖊️" },
+  { id:13, name:"Pencils (pack)",                   category:"Visualisation & Marking", price:2.50,  emoji:"✏️" },
+  { id:14, name:"Coloured Paper A4 (1 pack)",       category:"Visualisation & Marking", price:5.00,  emoji:"🎨" },
+  { id:15, name:"Coloured Paper A3 (1 pack)",       category:"Visualisation & Marking", price:7.00,  emoji:"🖼️" },
+  { id:16, name:"Sticky Notes (1 pack)",            category:"Visualisation & Marking", price:3.50,  emoji:"📌" },
+
+  // 4. Basic Assembly / Hardware
+  { id:17, name:"Binder Clips (1 pair)",            category:"Basic Assembly & Hardware", price:1.00,  emoji:"🖇️" },
+  { id:18, name:"Rubber Bands (1 pack)",            category:"Basic Assembly & Hardware", price:1.50,  emoji:"🔴" },
 ];
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
