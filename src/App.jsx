@@ -323,7 +323,7 @@ function OrderPage({ onCheckout }) {
         <button style={{ ...S.checkBtn, opacity: submitting ? 0.7 : 1 }} onClick={handleCheckout} disabled={submitting}>
           {submitting ? "⏳ Submitting…" : "Checkout & Notify Lecturer →"}
         </button>
-        <p style={S.checkNote}>Order saved · Email sent to lecturer</p>
+        <p style={S.checkNote}>Order will be saved after clicking check out · Email will be sent to lecturer</p>
       </div>
 
       <style>{`
