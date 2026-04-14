@@ -308,15 +308,7 @@ function OrderPage({ onCheckout }) {
 
 // ─── BOUGHT PAGE ──────────────────────────────────────────────────────────────
 function BoughtPage({ order, onBack }) {
-  const [loadingExcel, setLoadingExcel] = useState(false);
   const remaining = BUDGET_CAP - order.cumulativeSpend;
-
-  const handleDownload = async () => {
-    setLoadingExcel(true);
-    const allOrders = await getAllOrders();
-    downloadExcel(allOrders);
-    setLoadingExcel(false);
-  };
 
   return (
     <div style={S.page}>
@@ -378,16 +370,6 @@ function BoughtPage({ order, onBack }) {
             <p>Items will be prepared and passed to you physically.</p>
           </div>
         </div>
-
-        {/* Download Excel */}
-        <button
-          style={{ ...S.checkBtn, background:"linear-gradient(135deg,#1e3a5f,#1d4ed8)", marginBottom:10, opacity: loadingExcel ? 0.7 : 1 }}
-          onClick={handleDownload}
-          disabled={loadingExcel}
-        >
-          {loadingExcel ? "⏳ Fetching data…" : "⬇️ Download Full Orders Log (.xlsx)"}
-        </button>
-        <p style={S.checkNote}>Pulls all orders from Google Sheets into one Excel file</p>
 
         <button style={{ ...S.checkBtn, background:"linear-gradient(135deg,#4f46e5,#7c3aed)" }} onClick={onBack}>
           ← Place Another Order
