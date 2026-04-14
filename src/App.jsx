@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 
 // ─── PASTE YOUR GOOGLE APPS SCRIPT URL HERE AFTER STEP 14 ───────────────────
-const API_URL = "YOUR_GOOGLE_APPS_SCRIPT_URL_HERE";
+const API_URL = "https://script.google.com/macros/s/AKfycbxl1ywmq4pZf5gOjiN0CokZxPSfFDaajdHzs5fFKEynjEz6l7O7M0u066APNv0rU96V/exec";
 
 // ─── CONFIG ──────────────────────────────────────────────────────────────────
 const CLASSES   = ["DET101","DET102","DET103","DET201","DET202","DET203","DIT101","DIT102"];
