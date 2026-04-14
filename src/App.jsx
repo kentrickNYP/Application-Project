@@ -323,7 +323,7 @@ function OrderPage({ onCheckout }) {
         <button style={{ ...S.checkBtn, opacity: submitting ? 0.7 : 1 }} onClick={handleCheckout} disabled={submitting}>
           {submitting ? "⏳ Submitting…" : "Checkout & Notify Lecturer →"}
         </button>
-        <p style={S.checkNote}>Order saved to Google Sheets · Email sent to lecturer</p>
+        <p style={S.checkNote}>Order saved · Email sent to lecturer</p>
       </div>
 
       <style>{`
@@ -395,8 +395,8 @@ function BoughtPage({ order, onBack }) {
           </div>
 
           <div style={S.rcptFooter}>
-            <p>☁️ Order saved to Google Sheets</p>
-            <p>📧 Email sent to Kentrick_low@nyp.edu.sg</p>
+            <p>☁️ Order saved</p>
+            <p>📧 Email sent to Lecturer for Processing</p>
             <p>Items will be prepared and passed to you physically.</p>
           </div>
         </div>
