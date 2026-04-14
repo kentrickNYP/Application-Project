@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
+import emailjs from "@emailjs/browser";
 
 // ─── PASTE YOUR GOOGLE APPS SCRIPT URL HERE AFTER STEP 14 ───────────────────
 const API_URL = "https://script.google.com/macros/s/AKfycbxl1ywmq4pZf5gOjiN0CokZxPSfFDaajdHzs5fFKEynjEz6l7O7M0u066APNv0rU96V/exec";
@@ -78,12 +79,41 @@ async function getAllOrders() {
   } catch { return []; }
 }
 
-function sendEmail(orderData) {
-  const { classGroup, subgroup, items, total, timestamp } = orderData;
-  const lines = items.map(i => `  • ${i.name} x${i.qty} @ ${fmt(i.price)} = ${fmt(i.price * i.qty)}`).join("\n");
-  const body  = `New Group Order Received\n\nClass: ${classGroup}\nSubgroup: ${subgroup}\nTime: ${timestamp}\n\nItems:\n${lines}\n\nOrder Total: ${fmt(total)}\n\nPlease prepare for physical handover.`;
-  const sub   = encodeURIComponent(`[Order] ${classGroup} ${subgroup} – ${fmt(total)}`);
-  window.open(`mailto:Kentrick_low@nyp.edu.sg?subject=${sub}&body=${encodeURIComponent(body)}`, "_blank");
+// ── Fill in your three EmailJS IDs here ──────────────────────────────────────
+const EMAILJS_SERVICE_ID  = "service_d2lfqtq";  // from Step 2
+const EMAILJS_TEMPLATE_ID = "template_ayrpabb";  // from Step 3
+const EMAILJS_PUBLIC_KEY  = "1EVL4Yutu77a8yr2y";   // from Step 4
+
+async function sendEmail(orderData) {
+  const { classGroup, subgroup, items, total, cumulativeSpend, timestamp } = orderData;
+
+  const itemLines = items
+    .map(i => `• ${i.name} x${i.qty} @ $${i.price.toFixed(2)} = $${(i.price * i.qty).toFixed(2)}`)
+    .join("\n");
+
+  const remaining = Math.max(BUDGET_CAP - cumulativeSpend, 0);
+
+  const templateParams = {
+    class_group: classGroup,
+    subgroup:    subgroup,
+    timestamp:   timestamp,
+    items:       itemLines,
+    total:       `$${total.toFixed(2)}`,
+    cumulative:  `$${cumulativeSpend.toFixed(2)}`,
+    remaining:   `$${remaining.toFixed(2)}`,
+  };
+
+  try {
+    await emailjs.send(
+      EMAILJS_SERVICE_ID,
+      EMAILJS_TEMPLATE_ID,
+      templateParams,
+      EMAILJS_PUBLIC_KEY
+    );
+    console.log("Email sent successfully.");
+  } catch (err) {
+    console.error("Email failed:", err);
+  }
 }
 
 function downloadExcel(orders) {
@@ -169,7 +199,7 @@ function OrderPage({ onCheckout }) {
     const orderData     = { classGroup, subgroup, items: Object.values(cart), total: cartTotal, cumulativeSpend: newCumulative, timestamp: ts };
     await setSpend(classGroup, subgroup, newCumulative);
     await appendOrderLog(orderData);
-    sendEmail(orderData);
+    await sendEmail(orderData);
     setSubmitting(false);
     onCheckout(orderData);
   };
