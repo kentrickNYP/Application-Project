@@ -146,7 +146,7 @@ function downloadExcel(orders) {
 
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "All Orders");
-  XLSX.writeFile(wb, `NYP_Makerspace_Orders_${new Date().toISOString().slice(0,10)}.xlsx`);
+  XLSX.writeFile(wb, `Application_Project_Module_Orders_${new Date().toISOString().slice(0,10)}.xlsx`);
 }
 
 // ─── ORDER PAGE ───────────────────────────────────────────────────────────────
@@ -211,7 +211,7 @@ function OrderPage({ onCheckout }) {
           <span style={S.hIcon}>🛒</span>
           <div>
             <h1 style={S.hTitle}>Group Order</h1>
-            <p style={S.hSub}>NYP · Makerspace Supplies · Budget: {fmt(BUDGET_CAP)}/group</p>
+            <p style={S.hSub}>NYP · Application Project Module Supplies · Budget: {fmt(BUDGET_CAP)}/group</p>
           </div>
         </div>
       </div>
@@ -356,7 +356,7 @@ function BoughtPage({ order, onBack }) {
         <div style={{ ...S.card, border: "2px dashed #d1d5db", background: "#fafafa" }}>
           <div style={S.rcptHead}>
             <div style={{ fontSize: 36 }}>🛒</div>
-            <h2 style={S.rcptTitle}>NYP Makerspace</h2>
+            <h2 style={S.rcptTitle}>Application Project</h2>
             <p style={S.rcptSub}>Group Order Receipt</p>
             <p style={S.rcptDate}>{order.timestamp}</p>
           </div>
