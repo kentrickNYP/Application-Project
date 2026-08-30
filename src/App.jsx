@@ -15,31 +15,35 @@ const SUBGROUPS = ["SG1","SG2","SG3","SG4","SG5"];
 const BUDGET_CAP = 50;
 
 const ITEMS = [
-  // 1. Structure & Build
-  { id:1,  name:"Corrugated Cardboard Sheet (A2)", category:"Structure & Build",  price:2.50,  emoji:"📦" },
-  { id:2,  name:"Foam Board 5mm (A2)",              category:"Structure & Build",  price:4.00,  emoji:"🟦" },
-  { id:3,  name:"Foam Board 10mm (A2)",             category:"Structure & Build",  price:6.50,  emoji:"🟪" },
-  { id:4,  name:"Mount Board (A3)",                 category:"Structure & Build",  price:3.00,  emoji:"🗂️" },
-  { id:5,  name:"Thick Paper (A3)",                 category:"Structure & Build",  price:1.50,  emoji:"📄" },
-  { id:6,  name:"Ice Cream Sticks (1 pack)",        category:"Structure & Build",  price:3.50,  emoji:"🍦" },
-  { id:7,  name:"Acrylic Sheet (A2)",               category:"Structure & Build",  price:12.00, emoji:"🔲" },
 
-  // 2. Adhesives & Fastening
-  { id:8,  name:"Double-Sided Tape",                category:"Adhesives & Fastening", price:3.00,  emoji:"📎" },
-  { id:9,  name:"Velcro Strips (30cm)",             category:"Adhesives & Fastening", price:4.00,  emoji:"🔗" },
-  { id:10, name:"Clear Tape",                       category:"Adhesives & Fastening", price:1.50,  emoji:"🩹" },
-  { id:11, name:"White Glue / PVA (bottle)",        category:"Adhesives & Fastening", price:4.50,  emoji:"🧴" },
+  // CAT 1 — Structure Materials
+  { id:1,  name:"Corrugated Cardboard Sheet — A1, Double-Wall, 6–7mm", price:3.50, category:"CAT 1 — Structure Materials" },
+  { id:2,  name:"Corrugated Cardboard Sheet — A3, Single-Wall, 3mm", price:0.60, category:"CAT 1 — Structure Materials" },
+  { id:3,  name:"Foam Board — White, 5mm, A2", price:2.20, category:"CAT 1 — Structure Materials" },
+  { id:4,  name:"Mount Board — A2, 1.5–2mm", price:1.50, category:"CAT 1 — Structure Materials" },
+  { id:5,  name:"White Cardstock — A3, 300gsm", price:0.30, category:"CAT 1 — Structure Materials" },
+  { id:6,  name:"Ice Cream Sticks — Pack of 10", price:0.08, category:"CAT 1 — Structure Materials" },
+  { id:7,  name:"Foam Board — White, 10mm, A2", price:4.00, category:"CAT 1 — Structure Materials" },
+  { id:8,  name:"Clear Acrylic Sheet — 3mm, A4", price:4.00, category:"CAT 1 — Structure Materials" },
 
-  // 3. Visualisation & Marking
-  { id:12, name:"Permanent Markers (black + colours)", category:"Visualisation & Marking", price:6.50,  emoji:"🖊️" },
-  { id:13, name:"Pencils (pack)",                   category:"Visualisation & Marking", price:2.50,  emoji:"✏️" },
-  { id:14, name:"Coloured Paper A4 (1 pack)",       category:"Visualisation & Marking", price:5.00,  emoji:"🎨" },
-  { id:15, name:"Coloured Paper A3 (1 pack)",       category:"Visualisation & Marking", price:7.00,  emoji:"🖼️" },
-  { id:16, name:"Sticky Notes (1 pack)",            category:"Visualisation & Marking", price:3.50,  emoji:"📌" },
+  // CAT 2 — Adhesive and Fastening
+  { id:9,  name:"Double-Sided Foam Mounting Tape — 1mm, 24mm × 5m", price:2.00, category:"CAT 2 — Adhesive and Fastening" },
+  { id:10, name:"Double-Sided Tissue Tape — 12mm × 25m", price:2.00, category:"CAT 2 — Adhesive and Fastening" },
+  { id:11, name:"Self-Adhesive Velcro Strips — 20mm × 1m Pair", price:3.00, category:"CAT 2 — Adhesive and Fastening" },
+  { id:12, name:"Clear OPP Packing Tape — 48mm", price:1.17, category:"CAT 2 — Adhesive and Fastening" },
+  { id:13, name:"PVA White Glue — 250ml Bottle", price:3.50, category:"CAT 2 — Adhesive and Fastening" },
 
-  // 4. Basic Assembly / Hardware
-  { id:17, name:"Binder Clips (1 pair)",            category:"Basic Assembly & Hardware", price:1.00,  emoji:"🖇️" },
-  { id:18, name:"Rubber Bands (1 pack)",            category:"Basic Assembly & Hardware", price:1.50,  emoji:"🔴" },
+  // CAT 3 — Visualizing and Marking
+  { id:14, name:"Permanent Marker — Black, Fine Tip", price:1.00, category:"CAT 3 — Visualizing and Marking" },
+  { id:15, name:"Permanent Marker — Assorted Colours, Fine Tip", price:1.08, category:"CAT 3 — Visualizing and Marking" },
+  { id:16, name:"2B Pencil", price:0.21, category:"CAT 3 — Visualizing and Marking" },
+  { id:17, name:"Coloured Paper — A4, 120gsm", price:0.07, category:"CAT 3 — Visualizing and Marking" },
+  { id:18, name:"Sticky Notes — 76 × 76mm, 100 Sheets per Pad", price:0.67, category:"CAT 3 — Visualizing and Marking" },
+
+  // CAT 4 — Others
+  { id:19, name:"Binder Clips — Pack of 10", price:3.33, category:"CAT 4 — Others" },
+  { id:20, name:"Rubber Bands — Pack of 10", price:0.06, category:"CAT 4 — Others" }
+
 ];
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
