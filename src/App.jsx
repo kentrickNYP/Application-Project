@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import * as XLSX from "xlsx";
 
 // ─── PASTE YOUR GOOGLE APPS SCRIPT URL HERE AFTER STEP 14 ───────────────────
-const API_URL = "https://script.google.com/macros/s/AKfycbxl1ywmq4pZf5gOjiN0CokZxPSfFDaajdHzs5fFKEynjEz6l7O7M0u066APNv0rU96V/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbwkBc9_0JA9QEgLjxfs7tuZmfAoIafp3DyicQWQdVP90GWfLHWeezDo4c88IKqV6z2Q/exec";
 
 // ─── CONFIG ──────────────────────────────────────────────────────────────────
 const CLASSES = [
