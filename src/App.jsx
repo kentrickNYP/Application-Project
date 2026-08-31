@@ -10,7 +10,7 @@ const CLASSES = [
   "ET26A5","ET26B5","ET26C5","ET26D5",
   "ET26E5","ET26F5","ET26G5","ET26H5"
 ];
-const SUBGROUPS = ["SG1","SG2","SG3","SG4","SG5"];
+const SUBGROUPS = ["Sub Group 1","Sub Group 2","Sub Group 3","Sub Group 4","Sub Group 5"];
 const BUDGET_CAP = 50;
 
 const ITEMS = [
