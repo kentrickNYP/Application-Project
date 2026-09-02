@@ -14,7 +14,6 @@ const SUBGROUPS = ["Sub Group 1","Sub Group 2","Sub Group 3","Sub Group 4","Sub 
 const BUDGET_CAP = 50;
 
 const ITEMS = [
-
   // CAT 1 — Structure Materials
   { id:1,  name:"Corrugated Cardboard Sheet — A1, Double-Wall, 6–7mm", price:3.50, category:"CAT 1 — Structure Materials" },
   { id:2,  name:"Corrugated Cardboard Sheet — A3, Single-Wall, 3mm", price:0.60, category:"CAT 1 — Structure Materials" },
@@ -42,7 +41,6 @@ const ITEMS = [
   // CAT 4 — Others
   { id:19, name:"Binder Clips — Pack of 10", price:3.33, category:"CAT 4 — Others" },
   { id:20, name:"Rubber Bands — Pack of 10", price:0.06, category:"CAT 4 — Others" }
-
 ];
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
@@ -82,8 +80,6 @@ async function getAllOrders() {
   } catch { return []; }
 }
 
-// 💡 EMAILJS SYSTEM COMPLETELY REMOVED FROM THIS HELPER SECTION
-
 function downloadExcel(orders) {
   const rows = [];
   orders.forEach(order => {
@@ -91,23 +87,25 @@ function downloadExcel(orders) {
     if (isArray) {
       rows.push({
         "Timestamp":            order[0],
-        "Class":                order[1],
-        "Subgroup":             order[2],
-        "Item":                 order[3],
-        "Qty":                  order[4],
-        "Unit Price ($)":       order[5],
-        "Line Total ($)":       order[6],
-        "Order Total ($)":      order[7],
-        "Cumulative Spend ($)": order[8],
+        "Name":                 order[1],
+        "Admin No":             order[2],
+        "Class":                order[3],
+        "Subgroup":             order[4],
+        "Item":                 order[5],
+        "Qty":                  order[6],
+        "Unit Price ($)":       order[7],
+        "Line Total ($)":       order[8],
+        "Order Total ($)":      order[9],
+        "Cumulative Spend ($)": order[10],
         "Budget Cap ($)":       BUDGET_CAP,
-        "Remaining ($)":        parseFloat((BUDGET_CAP - order[8]).toFixed(2)),
+        "Remaining ($)":        parseFloat((BUDGET_CAP - order[10]).toFixed(2)),
       });
     }
   });
 
   const ws = XLSX.utils.json_to_sheet(rows);
   ws["!cols"] = [
-    {wch:22},{wch:10},{wch:10},{wch:32},{wch:6},
+    {wch:22},{wch:20},{wch:14},{wch:10},{wch:10},{wch:32},{wch:6},
     {wch:14},{wch:14},{wch:14},{wch:18},{wch:14},{wch:14}
   ];
 
@@ -118,16 +116,18 @@ function downloadExcel(orders) {
 
 // ─── ORDER PAGE ───────────────────────────────────────────────────────────────
 function OrderPage({ onCheckout }) {
-  const [classGroup,    setClassGroup]    = useState("");
-  const [subgroup,      setSubgroup]      = useState("");
-  const [cart,          setCart]          = useState({});
-  const [selectedItem,  setSelectedItem]  = useState("");
-  const [qty,           setQty]           = useState(1);
-  const [error,         setError]         = useState("");
-  const [pastSpend,     setPastSpend]     = useState(0);
-  const [loadingSpend,  setLoadingSpend]  = useState(false);
-  const [submitting,    setSubmitting]    = useState(false);
-  const [shake,         setShake]         = useState(false);
+  const [userName,     setUserName]     = useState("");
+  const [adminNo,      setAdminNo]      = useState("");
+  const [classGroup,   setClassGroup]   = useState("");
+  const [subgroup,     setSubgroup]     = useState("");
+  const [cart,         setCart]         = useState({});
+  const [selectedItem, setSelectedItem] = useState("");
+  const [qty,          setQty]          = useState(1);
+  const [error,        setError]        = useState("");
+  const [pastSpend,    setPastSpend]    = useState(0);
+  const [loadingSpend, setLoadingSpend] = useState(false);
+  const [submitting,   setSubmitting]   = useState(false);
+  const [shake,        setShake]        = useState(false);
 
   useEffect(() => {
     if (!classGroup || !subgroup) { setPastSpend(0); return; }
@@ -158,6 +158,7 @@ function OrderPage({ onCheckout }) {
   const removeItem = (id) => setCart(prev => { const u = {...prev}; delete u[id]; return u; });
 
   const handleCheckout = async () => {
+    if (!userName.trim() || !adminNo.trim()) { setError("Please enter your Name and Admin No."); return; }
     if (!classGroup || !subgroup) { setError("Please select your class and subgroup."); return; }
     if (Object.keys(cart).length === 0) { setError("Your cart is empty!"); return; }
     
@@ -168,6 +169,8 @@ function OrderPage({ onCheckout }) {
       const ts            = new Date().toLocaleString("en-SG", { timeZone: "Asia/Singapore" });
       const newCumulative = pastSpend + cartTotal;
       const orderData     = { 
+        userName,
+        adminNo,
         classGroup, 
         subgroup, 
         items: Object.values(cart), 
@@ -179,7 +182,7 @@ function OrderPage({ onCheckout }) {
       // 1. Update the running spend balance in Google Sheets
       await setSpend(classGroup, subgroup, newCumulative);
       
-      // 2. Log items to Google Sheets (This also fires the native email via Apps Script!)
+      // 2. Log items to Google Sheets
       await appendOrderLog(orderData);
       
       // 3. Complete checkout state
@@ -187,7 +190,7 @@ function OrderPage({ onCheckout }) {
       onCheckout(orderData);
     } catch (err) {
       console.error("Checkout failed:", err);
-      setError("An network error occurred. Please try again.");
+      setError("A network error occurred. Please try again.");
       setSubmitting(false);
     }
   };
@@ -205,9 +208,32 @@ function OrderPage({ onCheckout }) {
       </div>
 
       <div style={S.content}>
-        {/* Group Selection */}
+        {/* User Details & Group Selection */}
         <div style={S.card}>
-          <h2 style={S.cardTitle}>📍 Your Group</h2>
+          <h2 style={S.cardTitle}>📍 Your Details</h2>
+          <div style={{ ...S.row, marginBottom: 10 }}>
+            <div style={S.field}>
+              <label style={S.label}>Name</label>
+              <input 
+                type="text" 
+                placeholder="Enter your name" 
+                value={userName} 
+                onChange={e => setUserName(e.target.value)} 
+                style={S.textInput} 
+              />
+            </div>
+            <div style={S.field}>
+              <label style={S.label}>Admin No.</label>
+              <input 
+                type="text" 
+                placeholder="e.g. 230000A" 
+                value={adminNo} 
+                onChange={e => setAdminNo(e.target.value)} 
+                style={S.textInput} 
+              />
+            </div>
+          </div>
+
           <div style={S.row}>
             <div style={S.field}>
               <label style={S.label}>Class</label>
@@ -252,7 +278,7 @@ function OrderPage({ onCheckout }) {
               <label style={S.label}>Item</label>
               <select style={S.sel} value={selectedItem} onChange={e => setSelectedItem(e.target.value)}>
                 <option value="">Choose an item…</option>
-                {ITEMS.map(i => <option key={i.id} value={i.id}>{i.emoji} {i.name} — {fmt(i.price)}</option>)}
+                {ITEMS.map(i => <option key={i.id} value={i.id}>{i.name} — {fmt(i.price)}</option>)}
               </select>
             </div>
             <div style={{ ...S.field, flex: 0.5 }}>
@@ -288,7 +314,6 @@ function OrderPage({ onCheckout }) {
             <h2 style={S.cardTitle}>🧾 Current Cart</h2>
             {Object.values(cart).map(item => (
               <div key={item.id} style={S.cartRow}>
-                <span style={{ fontSize: 18 }}>{item.emoji}</span>
                 <div style={S.cartInfo}>
                   <span style={S.cartName}>{item.name}</span>
                   <span style={S.cartMeta}>×{item.qty} @ {fmt(item.price)}</span>
@@ -352,6 +377,8 @@ function BoughtPage({ order, onBack }) {
           <div style={S.div} />
 
           <div style={{ display:"flex", flexDirection:"column", gap:6, marginBottom:4 }}>
+            <div style={S.mRow}><span style={S.mKey}>Name</span><span style={S.mVal}>{order.userName}</span></div>
+            <div style={S.mRow}><span style={S.mKey}>Admin No.</span><span style={S.mVal}>{order.adminNo}</span></div>
             <div style={S.mRow}><span style={S.mKey}>Class</span><span style={S.mVal}>{order.classGroup}</span></div>
             <div style={S.mRow}><span style={S.mKey}>Subgroup</span><span style={S.mVal}>{order.subgroup}</span></div>
           </div>
@@ -360,7 +387,6 @@ function BoughtPage({ order, onBack }) {
 
           {order.items.map(item => (
             <div key={item.id} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10 }}>
-              <span style={{ fontSize:18 }}>{item.emoji}</span>
               <div style={{ flex:1 }}>
                 <div style={{ fontSize:14, fontWeight:600 }}>{item.name}</div>
                 <div style={{ fontSize:12, color:"#94a3b8" }}>×{item.qty} @ {fmt(item.price)}</div>
@@ -422,6 +448,7 @@ const S = {
   field:      { display:"flex", flexDirection:"column", flex:1, minWidth:110 },
   label:      { fontSize:11, fontWeight:700, color:"#6b7280", marginBottom:5, textTransform:"uppercase", letterSpacing:"0.5px" },
   sel:        { padding:"9px 11px", borderRadius:10, border:"1.5px solid #e2e8f0", fontSize:14, color:"#1e293b", background:"white", cursor:"pointer" },
+  textInput:  { padding:"9px 11px", borderRadius:10, border:"1.5px solid #e2e8f0", fontSize:14, color:"#1e293b", background:"white", width:"100%", boxSizing:"border-box" },
   numInput:   { padding:"9px 11px", borderRadius:10, border:"1.5px solid #e2e8f0", fontSize:14, width:"100%", boxSizing:"border-box" },
   addBtn:     { padding:"9px 16px", borderRadius:10, border:"none", background:"linear-gradient(135deg,#4f46e5,#7c3aed)", color:"white", fontWeight:700, fontSize:13, cursor:"pointer" },
   pastBox:    { marginTop:12, padding:"10px 14px", borderRadius:10, background:"#f8fafc", border:"1px solid #e2e8f0", fontSize:13 },
