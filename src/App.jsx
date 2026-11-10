@@ -94,7 +94,7 @@ function OrderPage({ onCheckout }) {
   const [subgroup,     setSubgroup]     = useState("");
   const [cart,         setCart]         = useState({});
   const [selectedItem, setSelectedItem] = useState("");
-  const [qty,          setQty]          = useState(1);
+  const [qty,          setQty]          = useState("1");
   const [error,        setError]        = useState("");
   const [pastSpend,    setPastSpend]    = useState(0);
   const [loadingSpend, setLoadingSpend] = useState(false);
@@ -141,24 +141,25 @@ function OrderPage({ onCheckout }) {
   const addToCart = () => {
     if (!selectedItem || loadingStock || stockError) return;
     const item = items.find(i => i.id === Number(selectedItem));
-    if (!item || !Number.isInteger(qty) || qty < 1 || qty > 10) {
+    const requestedQty = Number(qty);
+    if (!item || !/^\d+$/.test(qty) || !Number.isInteger(requestedQty) || requestedQty < 1 || requestedQty > 10) {
       setError("Choose a valid quantity (1–10)."); return;
     }
     const currentQty = cart[item.id]?.qty || 0;
-    if (currentQty + qty > item.remaining) {
+    if (currentQty + requestedQty > item.remaining) {
       setError(`Only ${item.remaining} set(s) of ${item.name} remain.`); return;
     }
     if (loadingSpend || spendError || !classGroup || !subgroup) {
       setError("Please select a class and subgroup, then wait for your budget to load."); return;
     }
-    if (Math.round(totalSpend * 100) + Math.round(item.price * qty * 100) > BUDGET_CAP * 100) {
+    if (Math.round(totalSpend * 100) + Math.round(item.price * requestedQty * 100) > BUDGET_CAP * 100) {
       setError(`Over budget! Only ${fmt(remaining)} remaining (including past orders).`);
       setShake(true); setTimeout(() => setShake(false), 500);
       return;
     }
     setError("");
-    setCart(prev => ({ ...prev, [item.id]: { ...item, qty: currentQty + qty } }));
-    setSelectedItem(""); setQty(1);
+    setCart(prev => ({ ...prev, [item.id]: { ...item, qty: currentQty + requestedQty } }));
+    setSelectedItem(""); setQty("1");
   };
 
   const removeItem = (id) => setCart(prev => { const u = {...prev}; delete u[id]; return u; });
@@ -286,8 +287,21 @@ function OrderPage({ onCheckout }) {
             </div>
             <div style={{ ...S.field, flex: 0.5 }}>
               <label style={S.label}>Qty</label>
-              <input type="number" min="1" max="10" value={qty}
-                onChange={e => setQty(parseInt(e.target.value) || 1)} style={S.numInput} />
+              <input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={qty}
+                onChange={e => {
+                  const value = e.target.value;
+                  if (/^\d{0,2}$/.test(value)) setQty(value);
+                }}
+                onBlur={() => {
+                  if (!qty || Number(qty) < 1) setQty("1");
+                }}
+                aria-label="Quantity (1 to 10)"
+                style={S.numInput}
+              />
             </div>
             <div style={{ ...S.field, flex: 0.7 }}>
               <label style={S.label}>&nbsp;</label>
@@ -414,7 +428,15 @@ function BoughtPage({ order, onBack }) {
           <div style={S.rcptFooter}>
             <p>☁️ Order saved</p>
             <p>{order.emailSent ? "📧 Email sent to Lecturer for Processing" : "⚠️ Email notification failed; lecturer should check Google Sheets"}</p>
-            <p>Items will be prepared and passed to you physically.</p>
+            <p style={{ fontWeight:700, color:"#14532d", marginBottom:6 }}>📍 Collection Details</p>
+            <p style={{ marginTop:0 }}>
+              Collect your items outside <strong>Block P.626 (PFP Helpdesk)</strong> on
+              <strong> Friday, 8 January 2027</strong>.
+            </p>
+            <p>
+              Please provide your <strong>name and admin number</strong>, and
+              <strong> sign the collection form</strong> before taking your items.
+            </p>
           </div>
         </div>
 
@@ -486,5 +508,5 @@ const S = {
   mVal:       { fontSize:12, fontWeight:700 },
   rcptTotals: { background:"#f8fafc", borderRadius:10, padding:"12px 14px", display:"flex", flexDirection:"column", gap:8 },
   rcptTRow:   { display:"flex", justifyContent:"space-between", fontSize:14 },
-  rcptFooter: { marginTop:16, textAlign:"center", fontSize:11, color:"#6b7280", lineHeight:1.8, background:"#f0fdf4", padding:"10px 14px", borderRadius:10 },
+  rcptFooter: { marginTop:16, textAlign:"center", fontSize:24, color:"#334155", lineHeight:1.5, background:"#f0fdf4", padding:"20px 18px", borderRadius:10 },
 };
