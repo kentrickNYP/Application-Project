@@ -428,7 +428,7 @@ function BoughtPage({ order, onBack }) {
           <div style={S.rcptFooter}>
             <p>☁️ Order saved</p>
             <p>{order.emailSent ? "📧 Email sent to Lecturer for Processing" : "⚠️ Email notification failed; lecturer should check Google Sheets"}</p>
-            <p style={{ fontWeight:700, color:"#14532d", marginBottom:6 }}>📍 Collection Details</p>
+            <p style={{ fontWeight:500, color:"#14532d", marginBottom:6 }}>📍 Collection Details</p>
             <p style={{ marginTop:0 }}>
               Collect your items outside <strong>Block P.626 (PFP Helpdesk)</strong> on
               <strong> Friday, 8 January 2027</strong>.
