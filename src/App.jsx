@@ -13,71 +13,43 @@ const CLASSES = [
 const SUBGROUPS = ["Sub Group 1","Sub Group 2","Sub Group 3","Sub Group 4","Sub Group 5"];
 const BUDGET_CAP = 50;
 
-const ITEMS = [
-  // CAT 1 — Structure Materials
-  { id:1,  name:"Corrugated Cardboard Sheet — A1, Double-Wall, 6–7mm", price:3.50, category:"CAT 1 — Structure Materials" },
-  { id:2,  name:"Corrugated Cardboard Sheet — A3, Single-Wall, 3mm", price:0.60, category:"CAT 1 — Structure Materials" },
-  { id:3,  name:"Foam Board — White, 5mm, A2", price:2.20, category:"CAT 1 — Structure Materials" },
-  { id:4,  name:"Mount Board — A2, 1.5–2mm", price:1.50, category:"CAT 1 — Structure Materials" },
-  { id:5,  name:"White Cardstock — A3, 300gsm", price:0.30, category:"CAT 1 — Structure Materials" },
-  { id:6,  name:"Ice Cream Sticks — Pack of 10", price:0.08, category:"CAT 1 — Structure Materials" },
-  { id:7,  name:"Foam Board — White, 10mm, A2", price:4.00, category:"CAT 1 — Structure Materials" },
-  { id:8,  name:"Clear Acrylic Sheet — 3mm, A4", price:4.00, category:"CAT 1 — Structure Materials" },
-
-  // CAT 2 — Adhesive and Fastening
-  { id:9,  name:"Double-Sided Foam Mounting Tape — 1mm, 24mm × 5m", price:2.00, category:"CAT 2 — Adhesive and Fastening" },
-  { id:10, name:"Double-Sided Tissue Tape — 12mm × 25m", price:2.00, category:"CAT 2 — Adhesive and Fastening" },
-  { id:11, name:"Self-Adhesive Velcro Strips — 20mm × 1m Pair", price:3.00, category:"CAT 2 — Adhesive and Fastening" },
-  { id:12, name:"Clear OPP Packing Tape — 48mm", price:1.17, category:"CAT 2 — Adhesive and Fastening" },
-  { id:13, name:"PVA White Glue — 250ml Bottle", price:3.50, category:"CAT 2 — Adhesive and Fastening" },
-
-  // CAT 3 — Visualizing and Marking
-  { id:14, name:"Permanent Marker — Black, Fine Tip", price:1.00, category:"CAT 3 — Visualizing and Marking" },
-  { id:15, name:"Permanent Marker — Assorted Colours, Fine Tip", price:1.08, category:"CAT 3 — Visualizing and Marking" },
-  { id:16, name:"2B Pencil", price:0.21, category:"CAT 3 — Visualizing and Marking" },
-  { id:17, name:"Coloured Paper — A4, 120gsm", price:0.07, category:"CAT 3 — Visualizing and Marking" },
-  { id:18, name:"Sticky Notes — 76 × 76mm, 100 Sheets per Pad", price:0.67, category:"CAT 3 — Visualizing and Marking" },
-
-  // CAT 4 — Others
-  { id:19, name:"Binder Clips — Pack of 10", price:3.33, category:"CAT 4 — Others" },
-  { id:20, name:"Rubber Bands — Pack of 10", price:0.06, category:"CAT 4 — Others" }
-];
+// Inventory item names, prices and stock are loaded live from the Inventory tab.
+const CATEGORIES = {
+  1:"Paper & Cardboard", 2:"Paper & Cardboard", 3:"Boards & Sheets",
+  4:"Paper & Cardboard", 5:"Craft Materials", 6:"Boards & Sheets",
+  7:"Boards & Sheets", 8:"Adhesives & Fasteners", 9:"Adhesives & Fasteners",
+  10:"Paper & Cardboard", 11:"Adhesives & Fasteners", 12:"Adhesives & Fasteners",
+  13:"Stationery", 14:"Stationery", 15:"Stationery", 16:"Stationery",
+  17:"Stationery", 18:"Stationery", 19:"Craft Materials"
+};
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
 const fmt = (n) => `$${Number(n).toFixed(2)}`;
 
-async function getSpend(cls, sg) {
-  try {
-    const res  = await fetch(`${API_URL}?action=getSpend&cls=${encodeURIComponent(cls)}&sg=${encodeURIComponent(sg)}`);
-    const data = await res.json();
-    return parseFloat(data.spend) || 0;
-  } catch { return 0; }
+async function requestJSON(action, params = {}) {
+  const url = new URL(API_URL);
+  url.searchParams.set("action", action);
+  Object.entries(params).forEach(([key, value]) => url.searchParams.set(key, value));
+  const response = await fetch(url.toString(), { cache: "no-store" });
+  if (!response.ok) throw new Error("Server unavailable. Please try again.");
+  const data = await response.json();
+  if (!data.ok) throw new Error(data.error || "Server error");
+  return data;
 }
 
-async function setSpend(cls, sg, amount) {
-  try {
-    await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({ action: "setSpend", cls, sg, amount }),
-    });
-  } catch(e) { console.error("setSpend error:", e); }
-}
+async function getInventory() { return (await requestJSON("getInventory")).items; }
+async function getSpend(cls, sg) { return Number((await requestJSON("getSpend", { cls, sg })).spend) || 0; }
 
-async function appendOrderLog(entry) {
-  try {
-    await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify({ action: "appendLog", order: entry }),
-    });
-  } catch(e) { console.error("appendLog error:", e); }
-}
-
-async function getAllOrders() {
-  try {
-    const res  = await fetch(`${API_URL}?action=getLogs`);
-    const data = await res.json();
-    return data.logs || [];
-  } catch { return []; }
+async function checkoutOrder(order) {
+  const response = await fetch(API_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({ action: "checkout", order })
+  });
+  if (!response.ok) throw new Error("Server unavailable. Please check your order history before retrying.");
+  const data = await response.json();
+  if (!data.ok) throw new Error(data.error || "Checkout could not be completed.");
+  return data;
 }
 
 function downloadExcel(orders) {
@@ -128,11 +100,36 @@ function OrderPage({ onCheckout }) {
   const [loadingSpend, setLoadingSpend] = useState(false);
   const [submitting,   setSubmitting]   = useState(false);
   const [shake,        setShake]        = useState(false);
+  const [items,        setItems]        = useState([]);
+  const [loadingStock, setLoadingStock] = useState(true);
+  const [stockError,   setStockError]   = useState("");
+  const [spendError,   setSpendError]   = useState("");
+  const [orderId,      setOrderId]      = useState(null);
+
+  const refreshInventory = async () => {
+    setLoadingStock(true);
+    setStockError("");
+    try {
+      const data = await getInventory();
+      setItems(data.map(i => ({ ...i, category: CATEGORIES[i.id] || "Other" })));
+    } catch (e) {
+      setStockError(e.message || "Could not load inventory.");
+    } finally { setLoadingStock(false); }
+  };
+
+  useEffect(() => { refreshInventory(); }, []);
 
   useEffect(() => {
-    if (!classGroup || !subgroup) { setPastSpend(0); return; }
+    let active = true;
+    if (!classGroup || !subgroup) { setPastSpend(0); setSpendError(""); return; }
     setLoadingSpend(true);
-    getSpend(classGroup, subgroup).then(s => { setPastSpend(s); setLoadingSpend(false); });
+    setSpendError("");
+    getSpend(classGroup, subgroup).then(s => {
+      if (active) setPastSpend(s);
+    }).catch(e => {
+      if (active) setSpendError(e.message || "Could not check budget.");
+    }).finally(() => { if (active) setLoadingSpend(false); });
+    return () => { active = false; };
   }, [classGroup, subgroup]);
 
   const cartTotal  = Object.values(cart).reduce((s, i) => s + i.price * i.qty, 0);
@@ -142,10 +139,19 @@ function OrderPage({ onCheckout }) {
   const budgetColor = budgetPct > 85 ? "#ef4444" : budgetPct > 60 ? "#f59e0b" : "#22c55e";
 
   const addToCart = () => {
-    if (!selectedItem) return;
-    const item       = ITEMS.find(i => i.id === parseInt(selectedItem));
+    if (!selectedItem || loadingStock || stockError) return;
+    const item = items.find(i => i.id === Number(selectedItem));
+    if (!item || !Number.isInteger(qty) || qty < 1 || qty > 10) {
+      setError("Choose a valid quantity (1–10)."); return;
+    }
     const currentQty = cart[item.id]?.qty || 0;
-    if (totalSpend + item.price * qty > BUDGET_CAP) {
+    if (currentQty + qty > item.remaining) {
+      setError(`Only ${item.remaining} set(s) of ${item.name} remain.`); return;
+    }
+    if (loadingSpend || spendError || !classGroup || !subgroup) {
+      setError("Please select a class and subgroup, then wait for your budget to load."); return;
+    }
+    if (Math.round(totalSpend * 100) + Math.round(item.price * qty * 100) > BUDGET_CAP * 100) {
       setError(`Over budget! Only ${fmt(remaining)} remaining (including past orders).`);
       setShake(true); setTimeout(() => setShake(false), 500);
       return;
@@ -158,41 +164,29 @@ function OrderPage({ onCheckout }) {
   const removeItem = (id) => setCart(prev => { const u = {...prev}; delete u[id]; return u; });
 
   const handleCheckout = async () => {
+    if (submitting) return;
     if (!userName.trim() || !adminNo.trim()) { setError("Please enter your Name and Admin No."); return; }
     if (!classGroup || !subgroup) { setError("Please select your class and subgroup."); return; }
+    if (loadingSpend || spendError || loadingStock || stockError) { setError("Please wait for stock and budget data to load correctly."); return; }
     if (Object.keys(cart).length === 0) { setError("Your cart is empty!"); return; }
-    
     setSubmitting(true);
-    setError(""); // Clear any old errors
-    
+    setError("");
+    // Reuse the same ID after failed/ambiguous network calls to prevent duplicate checkouts.
+    const requestId = orderId || (globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random()}`);
+    setOrderId(requestId);
     try {
-      const ts            = new Date().toLocaleString("en-SG", { timeZone: "Asia/Singapore" });
-      const newCumulative = pastSpend + cartTotal;
-      const orderData     = { 
-        userName,
-        adminNo,
-        classGroup, 
-        subgroup, 
-        items: Object.values(cart), 
-        total: cartTotal, 
-        cumulativeSpend: newCumulative, 
-        timestamp: ts 
-      };
-      
-      // 1. Update the running spend balance in Google Sheets
-      await setSpend(classGroup, subgroup, newCumulative);
-      
-      // 2. Log items to Google Sheets
-      await appendOrderLog(orderData);
-      
-      // 3. Complete checkout state
-      setSubmitting(false);
-      onCheckout(orderData);
+      const result = await checkoutOrder({
+        orderId: requestId, userName, adminNo, classGroup, subgroup,
+        items: Object.values(cart).map(i => ({ id: i.id, qty: i.qty }))
+      });
+      setOrderId(null);
+      onCheckout({ ...result.order, emailSent: result.emailSent });
     } catch (err) {
-      console.error("Checkout failed:", err);
-      setError("A network error occurred. Please try again.");
-      setSubmitting(false);
-    }
+      setError(err.message || "Checkout failed. Check the order log before retrying.");
+      // The server may have accepted another student's order while this cart was open.
+      try { await refreshInventory(); } catch (_) {}
+      try { setPastSpend(await getSpend(classGroup, subgroup)); } catch (_) {}
+    } finally { setSubmitting(false); }
   };
 
   return (
@@ -237,14 +231,14 @@ function OrderPage({ onCheckout }) {
           <div style={S.row}>
             <div style={S.field}>
               <label style={S.label}>Class</label>
-              <select style={S.sel} value={classGroup} onChange={e => { setClassGroup(e.target.value); setCart({}); }}>
+              <select style={S.sel} value={classGroup} onChange={e => { setClassGroup(e.target.value); setCart({}); setOrderId(null); }}>
                 <option value="">Select class…</option>
                 {CLASSES.map(c => <option key={c}>{c}</option>)}
               </select>
             </div>
             <div style={S.field}>
               <label style={S.label}>Subgroup</label>
-              <select style={S.sel} value={subgroup} onChange={e => { setSubgroup(e.target.value); setCart({}); }}>
+              <select style={S.sel} value={subgroup} onChange={e => { setSubgroup(e.target.value); setCart({}); setOrderId(null); }}>
                 <option value="">Select subgroup…</option>
                 {SUBGROUPS.map(s => <option key={s}>{s}</option>)}
               </select>
@@ -255,6 +249,8 @@ function OrderPage({ onCheckout }) {
             <div style={S.pastBox}>
               {loadingSpend ? (
                 <span style={S.pastText}>⏳ Checking past orders from Google Sheets…</span>
+              ) : spendError ? (
+                <span style={{ ...S.pastText, color: "#dc2626" }}>⚠️ Could not check your budget: {spendError}</span>
               ) : pastSpend > 0 ? (
                 <span style={S.pastText}>
                   📊 <strong>{classGroup} {subgroup}</strong> has previously spent{" "}
@@ -273,12 +269,19 @@ function OrderPage({ onCheckout }) {
         {/* Add Items */}
         <div style={S.card}>
           <h2 style={S.cardTitle}>📦 Add Items</h2>
+          <p style={{ fontSize:12, marginTop:0 }}>Stock is shared across all classes. Quantity means selling units (e.g. 1 set of 20 sticks).</p>
+          {stockError && <p style={{color:"#dc2626"}}>⚠️ {stockError} <button onClick={refreshInventory}>Retry</button></p>}
+          <button type="button" onClick={refreshInventory} disabled={loadingStock || submitting} style={{ marginBottom:12 }}>
+            {loadingStock ? "Loading stock…" : "↻ Refresh availability"}
+          </button>
           <div style={S.row}>
             <div style={{ ...S.field, flex: 2 }}>
               <label style={S.label}>Item</label>
               <select style={S.sel} value={selectedItem} onChange={e => setSelectedItem(e.target.value)}>
-                <option value="">Choose an item…</option>
-                {ITEMS.map(i => <option key={i.id} value={i.id}>{i.name} — {fmt(i.price)}</option>)}
+                <option value="">{loadingStock ? "Loading inventory…" : "Choose an item…"}</option>
+                {items.map(i => <option key={i.id} value={i.id} disabled={i.remaining <= 0}>
+                  {i.name} ({i.unitSize} {i.unitSize === 1 ? "piece/unit" : "pieces"} per set) — {fmt(i.price)} — {i.remaining <= 0 ? "SOLD OUT" : `${i.remaining} left${i.remaining < 10 ? " · LOW STOCK" : ""}`}
+                </option>)}
               </select>
             </div>
             <div style={{ ...S.field, flex: 0.5 }}>
@@ -288,7 +291,7 @@ function OrderPage({ onCheckout }) {
             </div>
             <div style={{ ...S.field, flex: 0.7 }}>
               <label style={S.label}>&nbsp;</label>
-              <button style={S.addBtn} onClick={addToCart}>+ Add</button>
+              <button style={S.addBtn} onClick={addToCart} disabled={loadingStock || !!stockError || submitting}>+ Add</button>
             </div>
           </div>
         </div>
@@ -333,10 +336,10 @@ function OrderPage({ onCheckout }) {
           <div style={{ ...S.errBox, animation: shake ? "shake 0.4s" : "none" }}>⚠️ {error}</div>
         )}
 
-        <button style={{ ...S.checkBtn, opacity: submitting ? 0.7 : 1 }} onClick={handleCheckout} disabled={submitting}>
+        <button style={{ ...S.checkBtn, opacity: submitting ? 0.7 : 1 }} onClick={handleCheckout} disabled={submitting || loadingStock || !!stockError || loadingSpend || !!spendError}>
           {submitting ? "⏳ Submitting…" : "Checkout & Notify Lecturer →"}
         </button>
-        <p style={S.checkNote}>Order will be saved after clicking check out · Email will be sent to lecturer</p>
+        <p style={S.checkNote}>Stock and budget will be checked again at checkout · Confirmation email is attempted after the order is saved</p>
       </div>
 
       <style>{`
@@ -360,7 +363,7 @@ function BoughtPage({ order, onBack }) {
           <span style={S.hIcon}>✅</span>
           <div>
             <h1 style={S.hTitle}>Order Confirmed</h1>
-            <p style={S.hSub}>Saved to Google Sheets · Email sent</p>
+            <p style={S.hSub}>Saved to Google Sheets · {order.emailSent ? "Email sent" : "Email could not be sent"}</p>
           </div>
         </div>
       </div>
@@ -410,7 +413,7 @@ function BoughtPage({ order, onBack }) {
 
           <div style={S.rcptFooter}>
             <p>☁️ Order saved</p>
-            <p>📧 Email sent to Lecturer for Processing</p>
+            <p>{order.emailSent ? "📧 Email sent to Lecturer for Processing" : "⚠️ Email notification failed; lecturer should check Google Sheets"}</p>
             <p>Items will be prepared and passed to you physically.</p>
           </div>
         </div>
